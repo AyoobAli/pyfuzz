@@ -58,7 +58,7 @@ def main():
         print("Target set: ", targetDomain)
         print("Path: ", targetPath)
 
-    connection.request("HEAD", targetPath+"random/hy27dtwjwysg.txt")
+    connection.request("HEAD", targetPath+"randomhy27dtwjwysg.txt")
     res = connection.getresponse()
 
     if res.status == 200:
