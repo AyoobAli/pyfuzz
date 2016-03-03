@@ -7,9 +7,16 @@ import os
 import getopt
 from optparse import OptionParser
 import string
+import signal
+
+def signal_handler(signal, frame):
+	print("\nScan stopped by user.")
+	sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
 
 def main():
-
+	
+	
     parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 0.1")
     parser.add_option("-u", "--url",   dest="targetURL", help="Target URL to scan")
     parser.add_option("-l", "--list",  dest="listFile",  help="List of paths to scan")
