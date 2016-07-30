@@ -1,5 +1,5 @@
 # pyfuzz
-URL fuzzing tool made of Python
+URL fuzzing tool made of Python.
 This tool needs Python v3
 
 -------
