@@ -1,7 +1,7 @@
 # pyfuzz
 URL fuzzing tool made of Python.
 
-This tool needs Python v3
+This tool needs Python v3.
 
 -------
 I built this tool while doing a pentent on a sharepoint website, I needed something to do the fuzzing and find some pages in the server.
