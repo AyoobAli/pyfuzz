@@ -1,5 +1,6 @@
 # pyfuzz
 URL fuzzing tool made of Python.
+
 This tool needs Python v3
 
 -------
@@ -8,7 +9,10 @@ Similar tool is [DirBuster](https://www.owasp.org/index.php/Category:OWASP_DirBu
 
 
 Usage:-
+
 python3 pyfuzz.py -u http://example.com/en/ -l sharepoint.txt
+
 OR
+
 ./pyfuzz -u http://example.com/en/ -l sharepoint.txt
 
