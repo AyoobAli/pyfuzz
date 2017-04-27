@@ -1,5 +1,5 @@
 #
-# pyfuzz v0.1 By Ayoob Ali ( www.AyoobAli.com )
+# pyfuzz v0.2 By Ayoob Ali ( www.AyoobAli.com )
 #
 import http.client
 import sys
@@ -71,33 +71,40 @@ def main():
 
     with open(options.listFile) as lFile:
         pathList = lFile.readlines()
-
-    print ("Scanning (",len(pathList),") files...")
+    totalURLs = len(pathList)
+    print ("Scanning (",totalURLs,") files...")
     countFound = 0
-
+    countAll = 0
+    strLine = ""
     for pathLine in pathList:
+        countAll = countAll + 1
         pathLine = pathLine.strip("\n")
         pathLine = pathLine.strip("\r")
 
         if pathLine != "":
             if pathLine[:1] == "/":
                 pathLine = pathLine[1:]
-
+            print (' ' * len(strLine), "\r", end="")
+            strLine = "Checking ["+str(countAll)+"/"+str(totalURLs)+"] "+targetPath+pathLine
+            print (strLine,"\r", end="")
             connection.request("GET", targetPath+pathLine)
             res = connection.getresponse()
 
             if res.status == 200:
+                print (' ' * len(strLine), "\r", end="")
                 print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine)
                 countFound += 1
 
             if options.showRedirect != None:
                 if res.status >= 300 and res.status < 400:
+                    print (' ' * len(strLine), "\r", end="")
                     print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine, "(",res.getheader("location"),")")
                     countFound += 1
 
             tpData = res.read()
 
     connection.close()
+    print (' ' * len(strLine), "\r", end="")
     print ( "Total Pages found:",countFound )
 
 
