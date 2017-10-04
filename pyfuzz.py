@@ -59,7 +59,14 @@ def main():
         print("Target set: ", targetDomain)
         print("Path: ", targetPath)
 
-    connection.request("HEAD", targetPath+"randomhy27dtwjwysg.txt")
+
+    try:
+        connection.request("HEAD", targetPath+"randomhy27dtwjwysg.txt")
+    except Exception as ErrMs:
+        print(ErrMs)
+        sys.exit(0)
+
+    
     res = connection.getresponse()
 
     if res.status == 200:
@@ -78,32 +85,36 @@ def main():
     countAll = 0
     strLine = ""
     for pathLine in pathList:
-        countAll = countAll + 1
-        pathLine = pathLine.strip("\n")
-        pathLine = pathLine.strip("\r")
+        try:
+            countAll = countAll + 1
+            pathLine = pathLine.strip("\n")
+            pathLine = pathLine.strip("\r")
 
-        if pathLine != "":
-            if pathLine[:1] == "/":
-                pathLine = pathLine[1:]
-            print (' ' * len(strLine), "\r", end="")
-            strLine = "Checking ["+str(countAll)+"/"+str(totalURLs)+"] "+targetPath+pathLine
-            print (strLine,"\r", end="")
-            connection.request("HEAD", targetPath+pathLine)
-            res = connection.getresponse()
-
-            if res.status == 200:
+            if pathLine != "":
+                if pathLine[:1] == "/":
+                    pathLine = pathLine[1:]
                 print (' ' * len(strLine), "\r", end="")
-                print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine)
-                countFound += 1
+                strLine = "Checking ["+str(countAll)+"/"+str(totalURLs)+"] "+targetPath+pathLine
+                print (strLine,"\r", end="")
+                connection.request("HEAD", targetPath+pathLine)
+                res = connection.getresponse()
 
-            if options.showRedirect != None:
-                if res.status >= 300 and res.status < 400:
+                if res.status == 200:
                     print (' ' * len(strLine), "\r", end="")
-                    print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine, "(",res.getheader("location"),")")
+                    print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine)
                     countFound += 1
 
-            tpData = res.read()
+                if options.showRedirect != None:
+                    if res.status >= 300 and res.status < 400:
+                        print (' ' * len(strLine), "\r", end="")
+                        print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine, "(",res.getheader("location"),")")
+                        countFound += 1
 
+                tpData = res.read()
+
+        except Exception as ErrMs:
+            pass
+        
     connection.close()
     print (' ' * len(strLine), "\r", end="")
     print ( "Total Pages found:",countFound )
