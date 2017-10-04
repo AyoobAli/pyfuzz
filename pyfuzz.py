@@ -1,5 +1,5 @@
 #
-# pyfuzz v0.2 By Ayoob Ali ( www.AyoobAli.com )
+# pyfuzz v0.3 By Ayoob Ali ( www.AyoobAli.com )
 #
 import http.client
 import sys
@@ -8,6 +8,7 @@ import getopt
 from optparse import OptionParser
 import string
 import signal
+import ssl
 
 def signal_handler(signal, frame):
 	print("\nScan stopped by user.")
@@ -39,7 +40,7 @@ def main():
     if options.targetURL[:5].lower() == 'https':
         targetDomain = options.targetURL[8:].split("/",1)[0].lower()
         targetPath = "/" + options.targetURL[8:].split("/",1)[1]
-        connection = http.client.HTTPSConnection(targetDomain)
+        connection = http.client.HTTPSConnection(targetDomain, timeout=20, context=ssl._create_unverified_context())
         targetPro = "https://"
         print("Target: ", targetPro+targetDomain, "(over HTTPS)")
         print("Path: ", targetPath)
@@ -87,7 +88,7 @@ def main():
             print (' ' * len(strLine), "\r", end="")
             strLine = "Checking ["+str(countAll)+"/"+str(totalURLs)+"] "+targetPath+pathLine
             print (strLine,"\r", end="")
-            connection.request("GET", targetPath+pathLine)
+            connection.request("HEAD", targetPath+pathLine)
             res = connection.getresponse()
 
             if res.status == 200:
