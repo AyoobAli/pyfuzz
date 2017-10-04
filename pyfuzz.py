@@ -99,7 +99,7 @@ def main():
                 connection.request("HEAD", targetPath+pathLine)
                 res = connection.getresponse()
 
-                if res.status == 200:
+                if res.status >= 200 and res.status < 300:
                     print (' ' * len(strLine), "\r", end="")
                     print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine)
                     countFound += 1
