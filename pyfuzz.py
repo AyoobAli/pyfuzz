@@ -40,7 +40,7 @@ def main():
     if options.targetURL[:5].lower() == 'https':
         targetDomain = options.targetURL[8:].split("/",1)[0].lower()
         targetPath = "/" + options.targetURL[8:].split("/",1)[1]
-        connection = http.client.HTTPSConnection(targetDomain, timeout=20, context=ssl._create_unverified_context())
+        connection = http.client.HTTPSConnection(targetDomain, timeout=30, context=ssl._create_unverified_context())
         targetPro = "https://"
         print("Target: ", targetPro+targetDomain, "(over HTTPS)")
         print("Path: ", targetPath)
@@ -62,12 +62,13 @@ def main():
 
     try:
         connection.request("HEAD", targetPath+"randomhy27dtwjwysg.txt")
+        res = connection.getresponse()
     except Exception as ErrMs:
         print(ErrMs)
         sys.exit(0)
 
     
-    res = connection.getresponse()
+    
 
     if res.status == 200:
         print("NOTE: Looks like the server is returning code 200 for all requests, there might be lots of false positive links.")
