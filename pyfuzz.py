@@ -1,5 +1,5 @@
 #
-# pyfuzz v0.3 By Ayoob Ali ( www.AyoobAli.com )
+# pyfuzz v0.4 By Ayoob Ali ( www.AyoobAli.com )
 #
 import http.client
 import sys
@@ -18,10 +18,11 @@ signal.signal(signal.SIGINT, signal_handler)
 def main():
 	
 	
-    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 0.1")
+    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 0.4")
     parser.add_option("-u", "--url",   dest="targetURL", help="Target URL to scan")
     parser.add_option("-l", "--list",  dest="listFile",  help="List of paths to scan")
     parser.add_option("-r", "--redirect", action="store_true", dest="showRedirect", help="Show redirect codes (3xx)")
+    parser.add_option("-e", "--error", action="store_true", dest="showError", help="Show Error codes (5xx)")
     (options, args) = parser.parse_args()
 
     if options.listFile == None or options.targetURL == None:
@@ -58,7 +59,10 @@ def main():
         targetPro = "http://"
         print("Target set: ", targetDomain)
         print("Path: ", targetPath)
-
+        if options.showRedirect != None:
+            print("Show Redirect: ON")
+        if options.showError != None:
+            print("Show Error: ON")
 
     try:
         connection.request("HEAD", targetPath+"randomhy27dtwjwysg.txt")
@@ -66,9 +70,6 @@ def main():
     except Exception as ErrMs:
         print(ErrMs)
         sys.exit(0)
-
-    
-    
 
     if res.status == 200:
         print("NOTE: Looks like the server is returning code 200 for all requests, there might be lots of false positive links.")
@@ -104,6 +105,12 @@ def main():
                     print (' ' * len(strLine), "\r", end="")
                     print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine)
                     countFound += 1
+
+                if options.showError != None:
+                    if res.status >= 500 and res.status < 600:
+                        print (' ' * len(strLine), "\r", end="")
+                        print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine)
+                        countFound += 1
 
                 if options.showRedirect != None:
                     if res.status >= 300 and res.status < 400:
