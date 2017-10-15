@@ -125,7 +125,6 @@ def main():
                 tpData = res.read()
 
         except Exception as ErrMs:
-            print(ErrMs)
             pass
         
     connection.close()
