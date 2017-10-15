@@ -1,5 +1,5 @@
 #
-# pyfuzz v0.4 By Ayoob Ali ( www.AyoobAli.com )
+# pyfuzz v0.4.1 By Ayoob Ali ( www.AyoobAli.com )
 #
 import http.client
 import sys
@@ -9,6 +9,7 @@ from optparse import OptionParser
 import string
 import signal
 import ssl
+from time import sleep
 
 def signal_handler(signal, frame):
 	print("\nScan stopped by user.")
@@ -18,11 +19,12 @@ signal.signal(signal.SIGINT, signal_handler)
 def main():
 	
 	
-    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 0.4")
+    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 0.4.1")
     parser.add_option("-u", "--url",   dest="targetURL", help="Target URL to scan")
     parser.add_option("-l", "--list",  dest="listFile",  help="List of paths to scan")
     parser.add_option("-r", "--redirect", action="store_true", dest="showRedirect", help="Show redirect codes (3xx)")
     parser.add_option("-e", "--error", action="store_true", dest="showError", help="Show Error codes (5xx)")
+    parser.add_option("-s", "--sleep", dest="milliseconds", type="int", help="Sleep for x milliseconds after each request")
     (options, args) = parser.parse_args()
 
     if options.listFile == None or options.targetURL == None:
@@ -88,6 +90,8 @@ def main():
     strLine = ""
     for pathLine in pathList:
         try:
+            if options.milliseconds != None:
+                sleep(options.milliseconds/1000)
             countAll = countAll + 1
             pathLine = pathLine.strip("\n")
             pathLine = pathLine.strip("\r")
@@ -121,6 +125,7 @@ def main():
                 tpData = res.read()
 
         except Exception as ErrMs:
+            print(ErrMs)
             pass
         
     connection.close()
