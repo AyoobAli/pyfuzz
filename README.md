@@ -1,4 +1,4 @@
-# pyfuzz v0.50
+# pyfuzz v0.5.1
 URL fuzzing tool made of Python.
 
 This tool needs Python v3.
