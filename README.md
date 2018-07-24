@@ -20,7 +20,11 @@ OR
 
 # Change LOG
 
-v0.5.0
+[24-07-2018] v0.5.1
+
+   - [Added] Option to ignore results that contain a specific string in the response body.
+
+[23-07-2018] v0.5.0
 
    - [Added] Option to add Custom Header to the request (-a).
    - [Added] Option to Change the HTTP Request Method (-x).

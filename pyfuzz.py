@@ -1,6 +1,6 @@
 ###
 ### Project: Pyfuzz
-### Version: 0.5.0
+### Version: 0.5.1
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
 ### License: MIT
 ###
@@ -21,7 +21,7 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 def main():
-    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 0.5.0")
+    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 0.5.1")
     parser.add_option("-u", "--url", dest="targetURL", metavar="URL", help="Target URL to scan")
     parser.add_option("-l", "--list", dest="listFile", metavar="FILE", help="List of paths to scan")
     parser.add_option("-r", "--redirect", action="store_true", dest="showRedirect", help="Show redirect codes (3xx)")
@@ -30,6 +30,7 @@ def main():
     parser.add_option("-a", "--header", action="append", dest="headers", help="Add Header to the HTTP request (Ex.: -a User-Agent x)", metavar='HEADER VALUE', nargs=2)
     parser.add_option("-b", "--body", dest="requestBody", metavar="Body", help="Request Body (Ex.: name=val&name2=val2)")
     parser.add_option("-x", "--method", dest="requestMethod", metavar="[Method]", help="HTTP Request Method")
+    parser.add_option("-i", "--ignore", action="append", dest="ignoreText", metavar="Text", help="Ignore results that contain a specific string")
 
     (options, args) = parser.parse_args()
 
@@ -129,25 +130,32 @@ def main():
                 print (strLine,"\r", end="")
                 connection.request(options.requestMethod, targetPath+pathLine, options.requestBody, requestHeaders)
                 res = connection.getresponse()
+                resBody = res.read().decode("utf-8")
+                isignored = False
+                if options.ignoreText != None:
+                    for igText in options.ignoreText:
+                        if igText in resBody:
+                            isignored = True
 
                 if res.status >= 200 and res.status < 300:
-                    print (' ' * len(strLine), "\r", end="")
-                    print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine)
-                    countFound += 1
-
-                if options.showError != None:
-                    if res.status >= 500 and res.status < 600:
+                    if isignored == False:
                         print (' ' * len(strLine), "\r", end="")
                         print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine)
                         countFound += 1
 
+                if options.showError != None:
+                    if res.status >= 500 and res.status < 600:
+                        if isignored == False:
+                            print (' ' * len(strLine), "\r", end="")
+                            print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine)
+                            countFound += 1
+
                 if options.showRedirect != None:
                     if res.status >= 300 and res.status < 400:
-                        print (' ' * len(strLine), "\r", end="")
-                        print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine, "(",res.getheader("location"),")")
-                        countFound += 1
-
-                tpData = res.read()
+                        if isignored == False:
+                            print (' ' * len(strLine), "\r", end="")
+                            print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine, "(",res.getheader("location"),")")
+                            countFound += 1
 
         except Exception as ErrMs:
             pass
