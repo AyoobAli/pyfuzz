@@ -1,28 +1,101 @@
-# pyfuzz v0.5.1
+# pyfuzz v1.0.0
+
 URL fuzzing tool made of Python.
 
-This tool needs Python v3.
+This tool needs Python v3 to work, and it should work fine in Linux, Windows, and Mac.
+
+URL fuzzing a technique used to discover hidden files/directories in a webserver.
+Example of those files, you might find database/webserver backupfiles, log files, testing pages, etc...
+
+**WARNING**: Performing a fuzzing attack on webserver without permission is illegal and could lead to a lawsuit.
+
+### Features
+
+ - Ability to Only Show pages with response code 200.
+ - Show redirect pages (Code 3xx)
+ - Show pages with Internal Error (Code 5xx).
+ - Set sleep time between requests.
+ - Add multiple custom Header values (Ex.: User-Agent, Cookies, etc...).
+ - Add a request parameters (Ex.: name=val&name2=val2).
+ - Set a request method (Ex.: POST, GET, PUT, etc...).
+ - Ignore findings that contains a specific text in the response.
+ - Ignore findings with response size smaller than X Bytes.
+ - Log finding in a file.
+ - Ability to start scanning from specific line number in the provided list (Useful after a crash in the middle of a scan).
+ - Set request timeout.
+
+If you have a new feature you'd like to see, please submit an issue.
 
 -------
-I built this tool while doing a pentent on a sharepoint website, I needed something to do the fuzzing to find some pages in the server.
-Similar tool is [DirBuster](https://www.owasp.org/index.php/Category:OWASP_DirBuster_Project) from OWASP, but this is a command line.
+
+### Install (Linux)
+
+Simply clone the repository to the location you want:
+(Example: you want to place it in `~/apps/`
+```Bash
+mkdir ~/apps/
+cd ~/apps/
+git clone https://github.com/ayoobali/pyfuzz
+cd pyfuzz
+chmod +x pyfuzz.py
+./pyfuzz.py
+```
+
+*To run the application from any directory, just create a symlink of `pyfuzz.py` in your bin directory.*
+
+```Bash
+ln -s ~/apps/pyfuzz/pyfuzz.py ~/bin/pyfuzz
+```
 
 
-Usage:-
+OR One line installation:
 
-python3 pyfuzz.py -u http://example.com/en/ -l sharepoint.txt
+```bash
+mkdir ~/apps/ && cd ~/apps/ && git clone https://github.com/ayoobali/pyfuzz && cd pyfuzz && chmod +x pyfuzz.py && ln -s ~/apps/pyfuzz/pyfuzz.py ~/bin/pyfuzz
+```
 
-OR
 
-./pyfuzz -u http://example.com/en/ -l sharepoint.txt
+### Usage
+
+To fuzz a URL:
+```Bash
+pyfuzz -u <URL> -l </Path/To/List/File.txt>
+```
+
+To fuzz a URL and only show findings with page size above 500 Bytes"
+```Bash
+pyfuzz -u <URL> -l </Path/To/List/File.txt> -m 500
+```
+
+To fuzz a URL and ignore findings that contains specific string (Ex.: 'This page does not exist')
+```Bash
+pyfuzz -u <URL> -l </Path/To/List/File.txt> -i 'This page does not exist'
+```
+
+For more options:
+```Bash
+pyfuzz -h
+```
 
 -------
 
-# Change LOG
+### Change LOG
+
+[07-01-2019] v1.0.0
+
+   - [Added]   Option to ignore findings with response size smaller than X Bytes (-m).
+   - [Added]   Option to set request timeout (-t).
+   - [Added]   Option to save output to a file (-g).
+   - [Added]   Option to Start scanning from specific line number (-f).
+   - [Added]   New list files (aps.txt, php.txt, directories.txt, others.txt, sharepoint.txt, short.txt)
+   - [Added]   Shebang to the python script so it can run directly from the terminal.
+   - [Changed] List files are stored in a directory called 'lists'.
+   - [Removed] Old list files.
+   - [Removed] Bash script that runs pyfuzz.py as it's not needed anymore.
 
 [24-07-2018] v0.5.1
 
-   - [Added] Option to ignore results that contain a specific string in the response body.
+   - [Added] Option to ignore results that contain a specific string in the response body (-i).
 
 [23-07-2018] v0.5.0
 
@@ -35,4 +108,7 @@ OR
 
 # TO-DO:
 
-   - Add the ability to filter results based on a string in the response body.
+   - ~~Add the ability to filter results based on a string in the response body.~~
+   - Add multi-threading option.
+   - Add option to replace variables in the provided list (Ex.: Replace "somepage.{#ext}" with "somepage.php").
+   - Add a spider option.

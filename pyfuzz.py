@@ -1,6 +1,7 @@
-###
+#!/usr/bin/env python3
+####
 ### Project: Pyfuzz
-### Version: 0.5.1
+### Version: 1.0.0
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
 ### License: MIT
 ###
@@ -15,13 +16,23 @@ import ssl
 from time import sleep
 import random
 
+logFile = ""
+
 def signal_handler(signal, frame):
 	print("\nScan stopped by user.")
 	sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 
+def printMSG(printM):
+    print(printM)
+    if logFile != "":
+        fhandle = open(logFile, "a")
+        fhandle.write(printM + "\n")
+        fhandle.close()
+
 def main():
-    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 0.5.1")
+    global logFile
+    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 1.0.0")
     parser.add_option("-u", "--url", dest="targetURL", metavar="URL", help="Target URL to scan")
     parser.add_option("-l", "--list", dest="listFile", metavar="FILE", help="List of paths to scan")
     parser.add_option("-r", "--redirect", action="store_true", dest="showRedirect", help="Show redirect codes (3xx)")
@@ -31,6 +42,14 @@ def main():
     parser.add_option("-b", "--body", dest="requestBody", metavar="Body", help="Request Body (Ex.: name=val&name2=val2)")
     parser.add_option("-x", "--method", dest="requestMethod", metavar="[Method]", help="HTTP Request Method")
     parser.add_option("-i", "--ignore", action="append", dest="ignoreText", metavar="Text", help="Ignore results that contain a specific string")
+    parser.add_option("-m", "--min-response-size", dest="dataLength", type="int", metavar="NUMBER", help="The minimum response body size in Byte")
+    parser.add_option("-g", "--log", dest="logFile", metavar="FILE", help="Log scan results to a file")
+    parser.add_option("-f", "--start-from", dest="startFrom", type="int", metavar="NUMBER", help="Start scanning from URL number x in the provided list")
+    parser.add_option("-t", "--timeout", dest="reqTimeout", type="int", metavar="Seconds", help="Set request timeout.")
+    parser.add_option("-v", "--verbose", action="store_true", dest="verbose", help="Show error messages")
+
+    startFrom = 0
+    reqTimeout = 15
 
     (options, args) = parser.parse_args()
 
@@ -39,6 +58,9 @@ def main():
 
     if options.requestBody == None:
         options.requestBody = ""
+
+    if options.dataLength == None:
+        options.dataLength = 0
 
     requestHeaders = {}
     if options.headers == None:
@@ -51,8 +73,18 @@ def main():
         parser.print_help()
         sys.exit()
 
+    if options.logFile != None:
+        logFile = options.logFile
+
+    if options.startFrom != None:
+        startFrom = options.startFrom
+
+    if options.reqTimeout != None:
+        if options.reqTimeout > 0:
+            reqTimeout = int(options.reqTimeout)
+
     if not os.path.isfile(options.listFile):
-        print("Error: File (", options.listFile, ") doesn't exist.")
+        printMSG("Error: File (" + options.listFile + ") doesn't exist.")
         sys.exit()
 
     if options.targetURL[-1] != "/":
@@ -63,66 +95,69 @@ def main():
     if options.targetURL[:5].lower() == 'https':
         targetDomain = options.targetURL[8:].split("/",1)[0].lower()
         targetPath = "/" + options.targetURL[8:].split("/",1)[1]
-        connection = http.client.HTTPSConnection(targetDomain, timeout=30, context=ssl._create_unverified_context())
+        connection = http.client.HTTPSConnection(targetDomain, timeout=reqTimeout, context=ssl._create_unverified_context())
         targetPro = "https://"
-        print("Target       : ", targetPro+targetDomain, "(over HTTPS)")
-        print("Path         : ", targetPath)
+        printMSG("Target       : " + targetPro+targetDomain + " (over HTTPS)")
+        printMSG("Path         : " + targetPath)
     elif options.targetURL[:5].lower() == 'http:':
         targetDomain = options.targetURL[7:].split("/",1)[0].lower()
         targetPath = "/"+options.targetURL[7:].split("/",1)[1]
         connection = http.client.HTTPConnection(targetDomain)
         targetPro = "http://"
-        print("Target       : ", targetDomain)
-        print("Path         : ", targetPath)
+        printMSG("Target       : " + targetDomain)
+        printMSG("Path         : " + targetPath)
     else:
         targetDomain = options.targetURL.split("/",1)[0].lower()
         targetPath = "/"+options.targetURL.split("/",1)[1]
         connection = http.client.HTTPConnection(targetDomain)
         targetPro = "http://"
-        print("Target       : ", targetDomain)
-        print("Path         : ", targetPath)
+        printMSG("Target       : " + targetDomain)
+        printMSG("Path         : " + targetPath)
 
-    print("Method       : ", options.requestMethod)
-    print("Header       : ", requestHeaders)
-    print("Body         : ", options.requestBody)
+    printMSG("Method       : " + options.requestMethod)
+    printMSG("Header       : " + str(requestHeaders))
+    printMSG("Body         : " + options.requestBody)
+    printMSG("Timeout      : " + str(reqTimeout))
 
     if options.showRedirect != None:
-        print("Show Redirect:  ON")
+        printMSG("Show Redirect:  ON")
     if options.showError != None:
-        print("Show Error   :  ON")
+        printMSG("Show Error   :  ON")
 
     try:
         randomPage = ''.join([random.choice(string.ascii_lowercase + string.digits) for n in range(16)])
         connection.request(options.requestMethod, targetPath+randomPage+".txt", options.requestBody, requestHeaders)
         res = connection.getresponse()
     except Exception as ErrMs:
-        print("Error: ", ErrMs)
+        if options.verbose != None:
+            printMSG("MainError: " + str(ErrMs))
         sys.exit(0)
 
     if res.status == 200:
-        print("NOTE: Looks like the server is returning code 200 for all requests, there might be lots of false positive links.")
+        printMSG("NOTE: Looks like the server is returning code 200 for all requests, there might be lots of false positive links.")
 
     if res.status >= 300 and res.status < 400 and options.showRedirect != None:
-        print("NOTE: Looks like the server is returning code", res.status, "for all requests, there might be lots of false positive links. try to scan without the option -r")
+        printMSG("NOTE: Looks like the server is returning code " + res.status + " for all requests, there might be lots of false positive links. try to scan without the option -r")
 
     tpData = res.read()
 
     with open(options.listFile) as lFile:
         pathList = lFile.readlines()
     totalURLs = len(pathList)
-    print ("Scanning (",totalURLs,") files...")
+    printMSG ("Scanning ( " + str(totalURLs) + " ) files...")
     countFound = 0
     countAll = 0
     strLine = ""
     for pathLine in pathList:
         try:
-            if options.milliseconds != None:
-                sleep(options.milliseconds/1000)
             countAll = countAll + 1
             pathLine = pathLine.strip("\n")
             pathLine = pathLine.strip("\r")
-
+            if countAll < startFrom:
+                continue
             if pathLine != "":
+                if options.milliseconds != None:
+                    sleep(options.milliseconds/1000)
                 if pathLine[:1] == "/":
                     pathLine = pathLine[1:]
                 print (' ' * len(strLine), "\r", end="")
@@ -131,6 +166,7 @@ def main():
                 connection.request(options.requestMethod, targetPath+pathLine, options.requestBody, requestHeaders)
                 res = connection.getresponse()
                 resBody = res.read().decode("utf-8")
+                resBodySize = len(resBody)
                 isignored = False
                 if options.ignoreText != None:
                     for igText in options.ignoreText:
@@ -138,31 +174,40 @@ def main():
                             isignored = True
 
                 if res.status >= 200 and res.status < 300:
-                    if isignored == False:
+                    if isignored == False and resBodySize >= options.dataLength:
                         print (' ' * len(strLine), "\r", end="")
-                        print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine)
+                        printMSG("Code " + str(res.status) + " : " + targetPro+targetDomain+targetPath+pathLine + " (" + str(resBodySize) + " Byte)")
                         countFound += 1
 
                 if options.showError != None:
                     if res.status >= 500 and res.status < 600:
-                        if isignored == False:
+                        if isignored == False and resBodySize >= options.dataLength:
                             print (' ' * len(strLine), "\r", end="")
-                            print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine)
+                            printMSG("Code " + str(res.status) + " : " + targetPro+targetDomain+targetPath+pathLine)
                             countFound += 1
 
                 if options.showRedirect != None:
                     if res.status >= 300 and res.status < 400:
-                        if isignored == False:
+                        if isignored == False and resBodySize >= options.dataLength:
                             print (' ' * len(strLine), "\r", end="")
-                            print("Code", res.status,":",targetPro+targetDomain+targetPath+pathLine, "(",res.getheader("location"),")")
+                            printMSG("Code " + str(res.status) + " : " + targetPro+targetDomain+targetPath+pathLine + " ( " + res.getheader("location") + " )")
                             countFound += 1
-
         except Exception as ErrMs:
-            pass
+            if options.verbose != None:
+                print (' ' * len(strLine), "\r", end="")
+                printMSG("Error: " + str(ErrMs))
+            try:
+                connection.close()
+                pass
+            except Exception as e:
+                if options.verbose != None:
+                    printMSG("Error2:" + str(e))
+                pass
+            
         
     connection.close()
     print (' ' * len(strLine), "\r", end="")
-    print ( "Total Pages found:",countFound )
+    printMSG( "Total Pages found: " + str(countFound) )
 
 
 
