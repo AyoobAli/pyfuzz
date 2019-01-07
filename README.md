@@ -1,4 +1,4 @@
-# pyfuzz v1.0.0
+# pyfuzz v1.0.1
 
 URL fuzzing tool made of Python.
 
@@ -23,6 +23,7 @@ Example of those files, you might find database/webserver backupfiles, log files
  - Log finding in a file.
  - Ability to start scanning from specific line number in the provided list (Useful after a crash in the middle of a scan).
  - Set request timeout.
+ - Ability to set variables to be replaces with value while fuzzing.
 
 If you have a new feature you'd like to see, please submit an issue.
 
@@ -81,6 +82,10 @@ pyfuzz -h
 
 ### Change LOG
 
+[07-01-2019] v1.0.1
+   - [Added]   Option to set value for variables in the list (-d)
+   - [Fixed]   Minor improvement in the way of displaying the progress.
+
 [07-01-2019] v1.0.0
 
    - [Added]   Option to ignore findings with response size smaller than X Bytes (-m).
@@ -108,7 +113,7 @@ pyfuzz -h
 
 ### TO-DO:
 
-   - ~~Add the ability to filter results based on a string in the response body.~~
    - Add multi-threading option.
-   - Add option to replace variables in the provided list (Ex.: Replace "somepage.{#ext}" with "somepage.php").
    - Add a spider option.
+   - ~~Add option to replace variables in the provided list (Ex.: Replace "somepage.{#ext}" with "somepage.php").~~
+   - ~~Add the ability to filter results based on a string in the response body.~~

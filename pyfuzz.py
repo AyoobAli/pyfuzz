@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 ####
 ### Project: Pyfuzz
-### Version: 1.0.0
+### Version: 1.0.1
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
 ### License: MIT
 ###
@@ -47,6 +47,7 @@ def main():
     parser.add_option("-f", "--start-from", dest="startFrom", type="int", metavar="NUMBER", help="Start scanning from URL number x in the provided list")
     parser.add_option("-t", "--timeout", dest="reqTimeout", type="int", metavar="Seconds", help="Set request timeout.")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose", help="Show error messages")
+    parser.add_option("-d", "--define-variable", action="append", dest="variables", help="Define variables to be replaced in URL (Ex.: -d '$varExtension' 'php')", metavar='VARIABLE VALUE', nargs=2)
 
     startFrom = 0
     reqTimeout = 15
@@ -68,6 +69,9 @@ def main():
 
     for header in options.headers:
         requestHeaders.update({header[0]: header[1]})
+
+    if options.variables == None:
+        options.variables = []
 
     if options.listFile == None or options.targetURL == None:
         parser.print_help()
@@ -156,13 +160,15 @@ def main():
             if countAll < startFrom:
                 continue
             if pathLine != "":
-                if options.milliseconds != None:
-                    sleep(options.milliseconds/1000)
+                for variable in options.variables:
+                    pathLine = pathLine.replace(variable[0], variable[1])
                 if pathLine[:1] == "/":
                     pathLine = pathLine[1:]
                 print (' ' * len(strLine), "\r", end="")
                 strLine = "Checking ["+str(countAll)+"/"+str(totalURLs)+"] "+targetPath+pathLine
                 print (strLine,"\r", end="")
+                if options.milliseconds != None:
+                    sleep(options.milliseconds/1000)
                 connection.request(options.requestMethod, targetPath+pathLine, options.requestBody, requestHeaders)
                 res = connection.getresponse()
                 resBody = res.read().decode("utf-8")
