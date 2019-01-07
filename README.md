@@ -33,7 +33,7 @@ If you have a new feature you'd like to see, please submit an issue.
 Simply clone the repository to the location you want:
 (Example: you want to place it in `~/apps/`
 ```Bash
-mkdir ~/apps/
+mkdir -p ~/apps/
 cd ~/apps/
 git clone https://github.com/ayoobali/pyfuzz
 cd pyfuzz
@@ -51,7 +51,7 @@ ln -s ~/apps/pyfuzz/pyfuzz.py ~/bin/pyfuzz
 OR One line installation:
 
 ```bash
-mkdir ~/apps/ && cd ~/apps/ && git clone https://github.com/ayoobali/pyfuzz && cd pyfuzz && chmod +x pyfuzz.py && ln -s ~/apps/pyfuzz/pyfuzz.py ~/bin/pyfuzz
+mkdir -p ~/apps/ && cd ~/apps/ && git clone https://github.com/ayoobali/pyfuzz && cd pyfuzz && chmod +x pyfuzz.py && ln -s ~/apps/pyfuzz/pyfuzz.py ~/bin/pyfuzz
 ```
 
 
