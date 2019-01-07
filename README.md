@@ -106,7 +106,7 @@ pyfuzz -h
    - [Fixed] Minor issue.
 
 
-# TO-DO:
+### TO-DO:
 
    - ~~Add the ability to filter results based on a string in the response body.~~
    - Add multi-threading option.
