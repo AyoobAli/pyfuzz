@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 ####
 ### Project: Pyfuzz
-### Version: 1.0.1
+### Version: 1.0.2
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
 ### License: MIT
 ###
@@ -15,6 +15,7 @@ import signal
 import ssl
 from time import sleep
 import random
+import subprocess
 
 logFile = ""
 
@@ -30,9 +31,28 @@ def printMSG(printM):
         fhandle.write(printM + "\n")
         fhandle.close()
 
+def cmd(command = None):
+    returnArr = {}
+    returnArr.update({"returnCode": 99})
+    try:
+        if command == None or command == "":
+            return returnArr
+        stdout = ""
+        stderr = ""
+        reCode = subprocess.Popen(command,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stData = reCode.communicate()
+        returnArr.update({"stdout": stData[0].decode("utf-8")})
+        returnArr.update({"stderr": stData[1].decode("utf-8")})
+        returnArr.update({"returnCode": reCode.returncode})
+        reCode.terminate()
+        return returnArr
+    except Exception as ErrMs:
+        returnArr.update({"error": ErrMs})
+        return returnArr
+
 def main():
     global logFile
-    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 1.0.1")
+    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 1.0.2")
     parser.add_option("-u", "--url", dest="targetURL", metavar="URL", help="Target URL to scan")
     parser.add_option("-l", "--list", dest="listFile", metavar="FILE", help="List of paths to scan")
     parser.add_option("-r", "--redirect", action="store_true", dest="showRedirect", help="Show redirect codes (3xx)")
@@ -48,6 +68,7 @@ def main():
     parser.add_option("-t", "--timeout", dest="reqTimeout", type="int", metavar="Seconds", help="Set request timeout.")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose", help="Show error messages")
     parser.add_option("-d", "--define-variable", action="append", dest="variables", help="Define variables to be replaced in URL (Ex.: -d '$varExtension' 'php')", metavar='VARIABLE VALUE', nargs=2)
+    parser.add_option("--cmd", dest="excCMD", metavar="Command", help="Execute shell command on each found results (Use with caution). Available variables ({#CODE#}, {#URL#}, {#SIZE#}, and {#REDIRECT#})")
 
     startFrom = 0
     reqTimeout = 15
@@ -86,6 +107,10 @@ def main():
     if options.reqTimeout != None:
         if options.reqTimeout > 0:
             reqTimeout = int(options.reqTimeout)
+
+    excCMD = ""
+    if options.excCMD != None:
+        excCMD = str(options.excCMD)
 
     if not os.path.isfile(options.listFile):
         printMSG("Error: File (" + options.listFile + ") doesn't exist.")
@@ -141,7 +166,7 @@ def main():
         printMSG("NOTE: Looks like the server is returning code 200 for all requests, there might be lots of false positive links.")
 
     if res.status >= 300 and res.status < 400 and options.showRedirect != None:
-        printMSG("NOTE: Looks like the server is returning code " + res.status + " for all requests, there might be lots of false positive links. try to scan without the option -r")
+        printMSG("NOTE: Looks like the server is returning code " + str(res.status) + " for all requests, there might be lots of false positive links. try to scan without the option -r")
 
     tpData = res.read()
 
@@ -179,25 +204,44 @@ def main():
                         if igText in resBody:
                             isignored = True
 
+                fURL = str(targetPro+targetDomain+targetPath+pathLine)
+                redirectHead = ""
+                exCommand = False
+                if res.getheader("location") != None:
+                    redirectHead = str(res.getheader("location"))
                 if res.status >= 200 and res.status < 300:
                     if isignored == False and resBodySize >= options.dataLength:
+                        exCommand = True
                         print (' ' * len(strLine), "\r", end="")
-                        printMSG("Code " + str(res.status) + " : " + targetPro+targetDomain+targetPath+pathLine + " (" + str(resBodySize) + " Byte)")
+                        printMSG("Code " + str(res.status) + " : " + fURL + " (" + str(resBodySize) + " Byte)")
                         countFound += 1
 
                 if options.showError != None:
                     if res.status >= 500 and res.status < 600:
                         if isignored == False and resBodySize >= options.dataLength:
+                            exCommand = True
                             print (' ' * len(strLine), "\r", end="")
-                            printMSG("Code " + str(res.status) + " : " + targetPro+targetDomain+targetPath+pathLine)
+                            printMSG("Code " + str(res.status) + " : " + fURL)
                             countFound += 1
 
                 if options.showRedirect != None:
                     if res.status >= 300 and res.status < 400:
                         if isignored == False and resBodySize >= options.dataLength:
+                            exCommand = True
                             print (' ' * len(strLine), "\r", end="")
-                            printMSG("Code " + str(res.status) + " : " + targetPro+targetDomain+targetPath+pathLine + " ( " + res.getheader("location") + " )")
+                            printMSG("Code " + str(res.status) + " : " + fURL + " ( " + redirectHead + " )")
                             countFound += 1
+
+                if str(excCMD) != "" and exCommand == True:
+                    cmdStr = str(excCMD)
+                    cmdStr = cmdStr.replace("{#CODE#}", str(res.status))
+                    cmdStr = cmdStr.replace("{#URL#}", fURL)
+                    cmdStr = cmdStr.replace("{#SIZE#}", str(resBodySize))
+                    cmdStr = cmdStr.replace("{#REDIRECT#}", redirectHead)
+                    cmdRes = cmd(str(cmdStr))
+                    if options.verbose != None and isinstance(cmdRes, dict) and 'stdout' in cmdRes:
+                        printMSG(cmdRes['stdout'])
+
         except Exception as ErrMs:
             if options.verbose != None:
                 print (' ' * len(strLine), "\r", end="")

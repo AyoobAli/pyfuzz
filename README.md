@@ -1,4 +1,4 @@
-# pyfuzz v1.0.1
+# pyFuzz v1.0.2
 
 URL fuzzing tool made of Python.
 
@@ -6,6 +6,9 @@ This tool needs Python v3 to work, and it should work fine in Linux, Windows, an
 
 URL fuzzing a technique used to discover hidden files/directories in a webserver.
 Example of those files, you might find database/webserver backupfiles, log files, testing pages, etc...
+
+![pyFuzz](.img/pyfuzz.png)
+
 
 **WARNING**: Performing a fuzzing attack on webserver without permission is illegal and could lead to a lawsuit.
 
@@ -24,6 +27,7 @@ Example of those files, you might find database/webserver backupfiles, log files
  - Ability to start scanning from specific line number in the provided list (Useful after a crash in the middle of a scan).
  - Set request timeout.
  - Ability to set variables to be replaces with value while fuzzing.
+ - Ability to execute shell command on each found URL.
 
 If you have a new feature you'd like to see, please submit an issue.
 
@@ -73,6 +77,11 @@ To fuzz a URL and ignore findings that contains specific string (Ex.: 'This page
 pyfuzz -u <URL> -l </Path/To/List/File.txt> -i 'This page does not exist'
 ```
 
+To download a copy of the found URL's
+```Bash
+pyfuzz -u <URL> -l </Path/To/List/File.txt> --cmd 'wget "{#URL#}"'
+```
+
 For more options:
 ```Bash
 pyfuzz -h
@@ -81,6 +90,10 @@ pyfuzz -h
 -------
 
 ### Change LOG
+
+[07-02-2019] v1.0.2
+   - [Added]   Option to Execute a shell command on each found URL `--cmd`.
+   - [Fixed]   Fixed a bug in detecting default return code status.
 
 [07-01-2019] v1.0.1
    - [Added]   Option to set value for variables in the list (-d)
