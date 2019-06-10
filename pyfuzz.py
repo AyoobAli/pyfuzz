@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 ####
 ### Project: Pyfuzz
-### Version: 1.0.2
+### Version: 1.0.3
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
 ### License: MIT
 ###
@@ -52,7 +52,7 @@ def cmd(command = None):
 
 def main():
     global logFile
-    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 1.0.2")
+    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 1.0.3")
     parser.add_option("-u", "--url", dest="targetURL", metavar="URL", help="Target URL to scan")
     parser.add_option("-l", "--list", dest="listFile", metavar="FILE", help="List of paths to scan")
     parser.add_option("-r", "--redirect", action="store_true", dest="showRedirect", help="Show redirect codes (3xx)")
@@ -131,14 +131,14 @@ def main():
     elif options.targetURL[:5].lower() == 'http:':
         targetDomain = options.targetURL[7:].split("/",1)[0].lower()
         targetPath = "/"+options.targetURL[7:].split("/",1)[1]
-        connection = http.client.HTTPConnection(targetDomain)
+        connection = http.client.HTTPConnection(targetDomain, timeout=reqTimeout)
         targetPro = "http://"
         printMSG("Target       : " + targetDomain)
         printMSG("Path         : " + targetPath)
     else:
         targetDomain = options.targetURL.split("/",1)[0].lower()
         targetPath = "/"+options.targetURL.split("/",1)[1]
-        connection = http.client.HTTPConnection(targetDomain)
+        connection = http.client.HTTPConnection(targetDomain, timeout=reqTimeout)
         targetPro = "http://"
         printMSG("Target       : " + targetDomain)
         printMSG("Path         : " + targetPath)
@@ -245,7 +245,7 @@ def main():
         except Exception as ErrMs:
             if options.verbose != None:
                 print (' ' * len(strLine), "\r", end="")
-                printMSG("Error: " + str(ErrMs))
+                printMSG("Error[" + str(countAll) + "]: " + str(ErrMs))
             try:
                 connection.close()
                 pass

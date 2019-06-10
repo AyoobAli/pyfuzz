@@ -1,4 +1,4 @@
-# pyFuzz v1.0.2
+# pyFuzz v1.0.3
 
 URL fuzzing tool made of Python.
 
@@ -56,7 +56,7 @@ ln -s ~/apps/pyfuzz/pyfuzz.py ~/bin/pyfuzz
 OR One line installation:
 
 ```bash
-mkdir -p ~/apps/ && cd ~/apps/ && git clone https://github.com/ayoobali/pyfuzz && cd pyfuzz && chmod +x pyfuzz.py && ln -s ~/apps/pyfuzz/pyfuzz.py ~/bin/pyfuzz
+mkdir -p ~/bin/ && mkdir -p ~/apps/ && cd ~/apps/ && git clone https://github.com/ayoobali/pyfuzz && cd pyfuzz && chmod +x pyfuzz.py && ln -s ~/apps/pyfuzz/pyfuzz.py ~/bin/pyfuzz
 ```
 
 
@@ -91,11 +91,18 @@ pyfuzz -h
 
 ### Change LOG
 
+[10-06-2019] v1.0.3
+
+   - [Changed] Error messages now shows the number of the current item of the list.
+   - [Fixed]   Timeout was not implemented for `http` URL's.
+ 
 [07-02-2019] v1.0.2
+
    - [Added]   Option to Execute a shell command on each found URL `--cmd`.
    - [Fixed]   Fixed a bug in detecting default return code status.
 
 [07-01-2019] v1.0.1
+
    - [Added]   Option to set value for variables in the list (-d)
    - [Fixed]   Minor improvement in the way of displaying the progress.
 

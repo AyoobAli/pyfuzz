@@ -4758,7 +4758,6 @@
 /index-new.aspx
 /index_old.asp
 /index_old.aspx
-/index.php
 /indexpic.asp
 /index_print.asp
 /index_rss.aspx
