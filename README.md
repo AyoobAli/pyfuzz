@@ -1,4 +1,4 @@
-# pyFuzz v1.0.3
+# pyFuzz v1.1.0
 
 URL fuzzing tool made of Python.
 
@@ -28,6 +28,7 @@ Example of those files, you might find database/webserver backupfiles, log files
  - Set request timeout.
  - Ability to set variables to be replaces with value while fuzzing.
  - Ability to execute shell command on each found URL.
+ - Ability to scan over http Proxy.
 
 If you have a new feature you'd like to see, please submit an issue.
 
@@ -90,6 +91,10 @@ pyfuzz -h
 -------
 
 ### Change LOG
+
+[17-05-2021] v1.1.0
+   - [Added]   Option to scan URL's over HTTP Proxy
+   - [Added]   Body variable in command execution option
 
 [10-06-2019] v1.0.3
 
