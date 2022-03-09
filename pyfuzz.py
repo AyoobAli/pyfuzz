@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 ####
 ### Project: Pyfuzz
-### Version: 1.1.0
+### Version: 1.1.1-Dev.01
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
 ### License: MIT
 ###
+from ast import Try
 import http.client
 import sys
 import os
@@ -15,8 +16,12 @@ import ssl
 from time import sleep
 import random
 import subprocess
+import re
 
 logFile = ""
+proxyList = []
+proxySelected = 0
+proxyUsed = []
 
 def signal_handler(signal, frame):
 	print("\nScan stopped by user.")
@@ -49,8 +54,83 @@ def cmd(command = None):
         returnArr.update({"error": ErrMs})
         return returnArr
 
+def proxyValidate(proxyServer = None):
+    try:
+        if proxyServer == None:
+            return False
+        proxyServer = proxyServer.strip()
+        if re.search("^[a-zA-Z0-9\._-]+:[0-9]{1,5}$", proxyServer):
+            httpProxy = str(proxyServer).split(':')
+            if httpProxy[1].isnumeric() == False or int(httpProxy[1].isnumeric()) < 1 or int(httpProxy[1].isnumeric()) > 65535:
+                return False
+            return [httpProxy[0], int(httpProxy[1])]
+        else:
+            return False
+    except:
+        return False
+
+def selectProxy():
+    global proxyList
+    global proxySelected
+    global proxyUsed
+    try:
+        if proxyUsed != []:
+            proxySelected = proxySelected + 1
+        if len(proxyList) == proxySelected:
+            proxySelected = 0
+        proxyUsed = proxyList[proxySelected]
+        return True
+    except:
+        return False
+
+def setConnection(targetURL = '', reqTimeout = 15, isProxy = False, quite = True):
+    global proxyUsed
+    targetPro = ""
+
+    if targetURL[:5].lower() == 'https':
+        targetDomain = targetURL[8:].split("/",1)[0].lower()
+        targetPath = "/" + targetURL[8:].split("/",1)[1]
+
+        if isProxy == True:
+            connection = http.client.HTTPSConnection(proxyUsed[0], proxyUsed[1], timeout=reqTimeout, context=ssl._create_unverified_context())
+            connection.set_tunnel(targetDomain)
+        else:
+            connection = http.client.HTTPSConnection(targetDomain, timeout=reqTimeout, context=ssl._create_unverified_context())
+
+        targetPro = "https://"
+        if quite == False:
+            printMSG("Target       : " + targetPro+targetDomain + " (over HTTPS)")
+            printMSG("Path         : " + targetPath)
+    elif targetURL[:5].lower() == 'http:':
+        targetDomain = targetURL[7:].split("/",1)[0].lower()
+        targetPath = "/"+targetURL[7:].split("/",1)[1]
+        if isProxy == True:
+            connection = http.client.HTTPConnection(proxyUsed[0], proxyUsed[1], timeout=reqTimeout)
+            connection.set_tunnel(targetDomain)
+        else:
+            connection = http.client.HTTPConnection(targetDomain, timeout=reqTimeout)
+        targetPro = "http://"
+        if quite == False:
+            printMSG("Target       : " + targetDomain)
+            printMSG("Path         : " + targetPath)
+    else:
+        targetDomain = targetURL.split("/",1)[0].lower()
+        targetPath = "/"+targetURL.split("/",1)[1]
+        if isProxy == True:
+            connection = http.client.HTTPConnection(proxyUsed[0], proxyUsed[1], timeout=reqTimeout)
+            connection.set_tunnel(targetDomain)
+        else:
+            connection = http.client.HTTPConnection(targetDomain, timeout=reqTimeout)
+        targetPro = "http://"
+        if quite == False:
+            printMSG("Target       : " + targetDomain)
+            printMSG("Path         : " + targetPath)
+    return [connection, targetDomain, targetPath, targetPro]
+
 def main():
     global logFile
+    global proxyList
+    global proxyUsed
     parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 1.1.0")
     parser.add_option("-u", "--url", dest="targetURL", metavar="URL", help="Target URL to scan")
     parser.add_option("-l", "--list", dest="listFile", metavar="FILE", help="List of paths to scan")
@@ -68,8 +148,9 @@ def main():
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose", help="Show error messages")
     parser.add_option("-d", "--define-variable", action="append", dest="variables", help="Define variables to be replaced in URL (Ex.: -d '$varExtension' 'php')", metavar='VARIABLE VALUE', nargs=2)
     parser.add_option("--cmd", dest="excCMD", metavar="Command", help="Execute shell command on each found results (Use with caution). Available variables ({#CODE#}, {#URL#}, {#SIZE#}, {#BODY#}, and {#REDIRECT#})")
-    parser.add_option("-p", "--proxy", dest="httpProxy", metavar="PROXY:PORT", help="HTTP Proxy to pass the connection through (Ex.: localhost:9080)")
-
+    parser.add_option("-p", "--proxy", dest="httpProxy", metavar="PROXY:PORT OR FILE/PATH", help="HTTP Proxy to pass the connection through (Ex.: localhost:9080)")
+    parser.add_option("-z", "--randomize-proxy", action="store_true", dest="randomizeProxy", help="Randomize proxy selection for each request (Only while using proxy file)")
+   
     startFrom = 0
     reqTimeout = 15
 
@@ -113,21 +194,30 @@ def main():
         excCMD = str(options.excCMD)
 
     isProxy = False
-    proxyHost = ""
-    proxyPort = 0
     if options.httpProxy != None:
-        if str(options.httpProxy).find(':') >= 0:
-            httpProxy = str(options.httpProxy).split(':')
-            proxyHost = httpProxy[0]
-            if httpProxy[1].isnumeric() == True:
-                proxyPort = int(httpProxy[1])
-            isProxy = True
-            if proxyPort < 1 or proxyPort > 65535:
-                printMSG("Error: Port number should be between 1 and 65535.")
+        isProxy = True
+        if os.path.isfile(options.httpProxy):
+            with open(options.httpProxy, 'r') as pFile:
+                for pLine in pFile.readlines():
+                    proxyArr = proxyValidate(pLine)
+                    if proxyArr != False and isinstance(proxyArr, list):
+                        proxyList.append([proxyArr[0], proxyArr[1]])
+            if len(proxyList) == 0:
+                printMSG("Error: Proxy file doesn't contain any valid proxy")
                 sys.exit()
+            random.shuffle(proxyList)
         else:
-            printMSG("Error: Proxy format should be HOSTNAME:PORT")
-            sys.exit()
+            proxyArr = proxyValidate(options.httpProxy)
+            if proxyArr != False and isinstance(proxyArr, list):
+                proxyList.append([proxyArr[0], proxyArr[1]])
+            else:
+                printMSG("Error: Proxy format should be HOSTNAME:PORT")
+                sys.exit()
+        selectProxy()
+
+    proxyRand = False
+    if options.randomizeProxy != None and isProxy == True:
+        proxyRand = True
 
     if not os.path.isfile(options.listFile):
         printMSG("Error: File (" + options.listFile + ") doesn't exist.")
@@ -136,49 +226,18 @@ def main():
     if options.targetURL[-1] != "/":
         options.targetURL += "/"
 
-    targetPro = ""
-
-    if options.targetURL[:5].lower() == 'https':
-        targetDomain = options.targetURL[8:].split("/",1)[0].lower()
-        targetPath = "/" + options.targetURL[8:].split("/",1)[1]
-
-        if isProxy == True:
-            connection = http.client.HTTPSConnection(proxyHost, proxyPort, timeout=reqTimeout, context=ssl._create_unverified_context())
-            connection.set_tunnel(targetDomain)
-        else:
-            connection = http.client.HTTPSConnection(targetDomain, timeout=reqTimeout, context=ssl._create_unverified_context())
-
-        targetPro = "https://"
-        printMSG("Target       : " + targetPro+targetDomain + " (over HTTPS)")
-        printMSG("Path         : " + targetPath)
-    elif options.targetURL[:5].lower() == 'http:':
-        targetDomain = options.targetURL[7:].split("/",1)[0].lower()
-        targetPath = "/"+options.targetURL[7:].split("/",1)[1]
-        if isProxy == True:
-            connection = http.client.HTTPConnection(proxyHost, proxyPort, timeout=reqTimeout)
-            connection.set_tunnel(targetDomain)
-        else:
-            connection = http.client.HTTPConnection(targetDomain, timeout=reqTimeout)
-        targetPro = "http://"
-        printMSG("Target       : " + targetDomain)
-        printMSG("Path         : " + targetPath)
-    else:
-        targetDomain = options.targetURL.split("/",1)[0].lower()
-        targetPath = "/"+options.targetURL.split("/",1)[1]
-        if isProxy == True:
-            connection = http.client.HTTPConnection(proxyHost, proxyPort, timeout=reqTimeout)
-            connection.set_tunnel(targetDomain)
-        else:
-            connection = http.client.HTTPConnection(targetDomain, timeout=reqTimeout)
-        targetPro = "http://"
-        printMSG("Target       : " + targetDomain)
-        printMSG("Path         : " + targetPath)
-
+    conArr = setConnection(options.targetURL, reqTimeout, isProxy, False)
+    connection = conArr[0]
+    targetDomain = conArr[1]
+    targetPath = conArr[2]
+    targetPro = conArr[3]
+    
     printMSG("Method       : " + options.requestMethod)
     printMSG("Header       : " + str(requestHeaders))
     printMSG("Body         : " + options.requestBody)
     printMSG("Timeout      : " + str(reqTimeout))
-    printMSG("Proxy        : " + str(proxyHost) + ":" + str(proxyPort))
+    if isProxy == True:
+        printMSG("Proxy        : " + str(proxyUsed[0]) + ":" + str(proxyUsed[1]))
 
     if options.showRedirect != None:
         printMSG("Show Redirect:  ON")
@@ -274,6 +333,13 @@ def main():
                     cmdRes = cmd(str(cmdStr))
                     if options.verbose != None and isinstance(cmdRes, dict) and 'stdout' in cmdRes:
                         printMSG(cmdRes['stdout'])
+            if proxyRand == True:
+                selectProxy()
+                conArr = setConnection(options.targetURL, reqTimeout, isProxy, True)
+                connection = conArr[0]
+                targetDomain = conArr[1]
+                targetPath = conArr[2]
+                targetPro = conArr[3]
 
         except Exception as ErrMs:
             if options.verbose != None:
@@ -281,12 +347,18 @@ def main():
                 printMSG("Error[" + str(countAll) + "]: " + str(ErrMs))
             try:
                 connection.close()
+                if proxyRand == True:
+                    selectProxy()
+                    conArr = setConnection(options.targetURL, reqTimeout, isProxy, True)
+                    connection = conArr[0]
+                    targetDomain = conArr[1]
+                    targetPath = conArr[2]
+                    targetPro = conArr[3]
                 pass
             except Exception as e:
                 if options.verbose != None:
                     printMSG("Error2:" + str(e))
                 pass
-            
         
     connection.close()
     print (' ' * len(strLine), "\r", end="")

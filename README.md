@@ -1,4 +1,4 @@
-# pyFuzz v1.1.0
+# pyFuzz v1.1.1-Dev.01
 
 URL fuzzing tool made of Python.
 
@@ -91,6 +91,10 @@ pyfuzz -h
 -------
 
 ### Change LOG
+
+[09-03-2022] v1.1.1-Dev.01
+   - [Added]   Select proxy server from file
+   - [Added]   Randomize proxy selection for each request
 
 [17-05-2021] v1.1.0
    - [Added]   Option to scan URL's over HTTP Proxy
