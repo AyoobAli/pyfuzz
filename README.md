@@ -133,10 +133,11 @@ pyfuzz -h
 
    - Add multi-threading option.
    - Add a spider option.
+   - ~~Add option to replace variables in the provided list (Ex.: Replace "somepage.{#ext}" with "somepage.php").~~
+   - ~~Add the ability to filter results based on a string in the response body.~~
 
 ## Disclaimer
 
 PyFuzz is intended for educational and legal testing purposes only. Use of this tool for attacking web applications without prior mutual consent is illegal and could lead to a lawsuit.
 
-   - ~~Add option to replace variables in the provided list (Ex.: Replace "somepage.{#ext}" with "somepage.php").~~
-   - ~~Add the ability to filter results based on a string in the response body.~~
+
