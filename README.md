@@ -1,16 +1,9 @@
 # pyFuzz v1.1.0
 
-URL fuzzing tool made of Python.
-
-This tool needs Python v3 to work, and it should work fine in Linux, Windows, and Mac.
-
-URL fuzzing a technique used to discover hidden files/directories in a webserver.
-Example of those files, you might find database/webserver backupfiles, log files, testing pages, etc...
+PyFuzz is a comprehensive web path scanner tool designed to facilitate penetration testing and web application security assessment. This tool allows for the scanning of web applications to discover potential vulnerabilities and backup files through brute force path finding.
 
 ![pyFuzz](.img/pyfuzz.png)
 
-
-**WARNING**: Performing a fuzzing attack on webserver without permission is illegal and could lead to a lawsuit.
 
 ### Features
 
@@ -140,5 +133,10 @@ pyfuzz -h
 
    - Add multi-threading option.
    - Add a spider option.
+
+## Disclaimer
+
+PyFuzz is intended for educational and legal testing purposes only. Use of this tool for attacking web applications without prior mutual consent is illegal and could lead to a lawsuit.
+
    - ~~Add option to replace variables in the provided list (Ex.: Replace "somepage.{#ext}" with "somepage.php").~~
    - ~~Add the ability to filter results based on a string in the response body.~~
