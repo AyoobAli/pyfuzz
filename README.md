@@ -27,10 +27,17 @@ If you have a new feature you'd like to see, please submit an issue.
 
 -------
 
-### Install (Linux)
+### Install using pip
+
+```bash
+pip install pyfuzz-web
+```
+
+### Install from Github
 
 Simply clone the repository to the location you want:
 (Example: you want to place it in `~/apps/`
+
 ```Bash
 mkdir -p ~/apps/
 cd ~/apps/
