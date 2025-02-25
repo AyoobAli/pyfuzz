@@ -13,3 +13,6 @@ dependencies = []
 
 [project.urls]
 Homepage = "http://ayoobali.github.io/pyfuzz/"
+
+[project.scripts]
+pyfuzz = "pyfuzz:main"
