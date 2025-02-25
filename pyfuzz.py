@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 ####
 ### Project: Pyfuzz
-### Version: 1.1.0
+### Version: 1.1.1
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
 ### License: MIT
 ###
@@ -51,7 +51,7 @@ def cmd(command = None):
 
 def main():
     global logFile
-    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 1.1.0")
+    parser = OptionParser(usage="%prog -u http://example.com/en/ -l sharepoint.txt", version="%prog 1.1.1")
     parser.add_option("-u", "--url", dest="targetURL", metavar="URL", help="Target URL to scan")
     parser.add_option("-l", "--list", dest="listFile", metavar="FILE", help="List of paths to scan")
     parser.add_option("-r", "--redirect", action="store_true", dest="showRedirect", help="Show redirect codes (3xx)")

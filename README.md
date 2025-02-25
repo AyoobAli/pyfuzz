@@ -1,8 +1,8 @@
-# pyFuzz v1.1.0
+# pyFuzz v1.1.1
 
 PyFuzz is a comprehensive web path scanner tool designed to facilitate penetration testing and web application security assessment. This tool allows for the scanning of web applications to discover potential vulnerabilities and backup files through brute force path finding.
 
-![pyFuzz](.img/pyfuzz.png)
+![pyFuzz](.img/v1.1.1.png)
 
 
 ### Features
@@ -91,6 +91,8 @@ pyfuzz -h
 -------
 
 ### Change LOG
+[25-02-2025] v1.1.1
+   - [NOTES]   Allow installation using pip
 
 [17-05-2021] v1.1.0
    - [Added]   Option to scan URL's over HTTP Proxy
