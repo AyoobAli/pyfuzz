@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyfuzz-web"
-version = "1.1.1"
+version = "1.1.1.post1"
 description = "Comprehensive web path scanner tool designed to facilitate penetration testing and web application security assessment"
 authors = [{ name = "Ayoob Ali" }]
 license = { text = "MIT" }
@@ -15,4 +15,10 @@ dependencies = []
 Homepage = "http://ayoobali.github.io/pyfuzz/"
 
 [project.scripts]
-pyfuzz = "pyfuzz:main"
+pyfuzz = "pyfuzz_web.pyfuzz:main" 
+
+[tool.setuptools]
+packages = ["pyfuzz_web"]
+
+[tool.setuptools.package-data]
+"pyfuzz_web" = ["lists/*"]
